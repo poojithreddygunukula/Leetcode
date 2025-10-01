@@ -2,19 +2,61 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: "0 12 * * *" # runs every day at 12:00 UTC
-  workflow_dispatch: # allow manual trigger
+    - cron: "0 12 * * *"  # Runs daily at 12:00 UTC
+  workflow_dispatch:       # Allows manual trigger
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      - name: Sync LeetCode submissions
+      # Sync Python solutions
+      - name: Sync Python solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
-          csrf-token: ${{ secrets.CSRF_TOKEN }}
+          leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
+          language: python3
+          folder: solutions/Python
+
+      # Sync SQL solutions
+      - name: Sync SQL solutions
+        uses: joshcai/leetcode-sync@v1.7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
+          language: sql
+          folder: solutions/SQL
+
+      # Sync Java solutions
+      - name: Sync Java solutions
+        uses: joshcai/leetcode-sync@v1.7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
+          language: java
+          folder: solutions/Java
+
+      # Sync C++ solutions
+      - name: Sync C++ solutions
+        uses: joshcai/leetcode-sync@v1.7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          leetcode-session: ${{ secrets.LEETCODE_SESSION }}
+          leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
+          language: cpp
+          folder: solutions/C++
+      
+      # Commit and push all changes
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add solutions || true
+          git commit -m "Sync LeetCode submissions [skip ci]" || echo "No changes to commit"
+          git push
+
