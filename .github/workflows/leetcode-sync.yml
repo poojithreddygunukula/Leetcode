@@ -2,7 +2,7 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: "0 */6 * * *"   # Runs every 6 hours
+    - cron: "0 */6 * * *"   # runs every 6 hours
   workflow_dispatch:
 
 jobs:
@@ -23,9 +23,10 @@ jobs:
           destination-folder: solutions
           verbose: true
 
-      # Step 3: Organize submissions into language folders
+      # Step 3: Organize submissions into language folders (robust version)
       - name: Organize Submissions by Language
         run: |
+          # Create language folders
           mkdir -p solutions/Python solutions/SQL solutions/Java solutions/Cpp
 
           # Move files based on extensions
@@ -35,8 +36,8 @@ jobs:
           for f in solutions/*.cpp; do mv "$f" solutions/Cpp/; done
           for f in solutions/*.sql; do mv "$f" solutions/SQL/; done
 
-          # Detect SQL submissions without extensions
-          for f in solutions/*; do
+          # Also check the root folder for any extension-less files (likely SQL)
+          for f in *; do
             if [[ -f "$f" && ! "$f" =~ \.py|\.java|\.cpp|\.sql ]]; then
               if grep -iqE "SELECT|UPDATE|INSERT|DELETE|FROM|WHERE" "$f"; then
                 mv "$f" solutions/SQL/
@@ -44,7 +45,7 @@ jobs:
             fi
           done
 
-          # Commit and push changes
+          # Commit and push organized files
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
           git add solutions/*
