@@ -26,21 +26,27 @@ jobs:
       # Step 3: Organize submissions into language folders
       - name: Organize Submissions by Language
         run: |
-          # Create folders for each language
           mkdir -p solutions/Python solutions/SQL solutions/Java solutions/Cpp
 
-          # Move files based on extension
+          # Move files based on extensions
           shopt -s nullglob
           for f in solutions/*.py; do mv "$f" solutions/Python/; done
-          for f in solutions/*.sql; do mv "$f" solutions/SQL/; done
           for f in solutions/*.java; do mv "$f" solutions/Java/; done
           for f in solutions/*.cpp; do mv "$f" solutions/Cpp/; done
+          for f in solutions/*.sql; do mv "$f" solutions/SQL/; done
 
-          # Configure git
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          # Detect SQL submissions without extensions
+          for f in solutions/*; do
+            if [[ -f "$f" && ! "$f" =~ \.py|\.java|\.cpp|\.sql ]]; then
+              if grep -iqE "SELECT|UPDATE|INSERT|DELETE|FROM|WHERE" "$f"; then
+                mv "$f" solutions/SQL/
+              fi
+            fi
+          done
 
           # Commit and push changes
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
           git add solutions/*
           git commit -m "Organize LeetCode submissions by language" || echo "No new files to organize"
           git push
