@@ -2,26 +2,27 @@ name: LeetCode Sync
 
 on:
   schedule:
-    - cron: "0 12 * * *"  # Runs daily at 12:00 UTC
-  workflow_dispatch:       # Allows manual trigger
+    - cron: "0 */6 * * *"   # runs every 6 hours
+  workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repo
+        uses: actions/checkout@v3
 
-      # Sync Python solutions
+      # Python submissions
       - name: Sync Python solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
           leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
-          language: python3
+          language: python
           folder: solutions/Python
 
-      # Sync SQL solutions
+      # SQL submissions
       - name: Sync SQL solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
@@ -31,7 +32,7 @@ jobs:
           language: sql
           folder: solutions/SQL
 
-      # Sync Java solutions
+      # Java submissions
       - name: Sync Java solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
@@ -41,7 +42,7 @@ jobs:
           language: java
           folder: solutions/Java
 
-      # Sync C++ solutions
+      # C++ submissions
       - name: Sync C++ solutions
         uses: joshcai/leetcode-sync@v1.7
         with:
@@ -49,14 +50,18 @@ jobs:
           leetcode-session: ${{ secrets.LEETCODE_SESSION }}
           leetcode-csrf-token: ${{ secrets.CSRF_TOKEN }}
           language: cpp
-          folder: solutions/C++
-      
-      # Commit and push all changes
-      - name: Commit and push changes
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add solutions || true
-          git commit -m "Sync LeetCode submissions [skip ci]" || echo "No changes to commit"
-          git push
+          folder: solutions/Cpp
 
+      # 🛠 Fix misplaced SQL files (if action ignores folder)
+      - name: Fix misplaced SQL files
+        run: |
+          mkdir -p solutions/SQL
+          shopt -s nullglob
+          for f in *.sql; do
+            mv "$f" solutions/SQL/
+          done
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git add solutions/SQL/*.sql || true
+          git commit -m "Move SQL submissions into solutions/SQL" || echo "No misplaced SQL files"
+          git push
